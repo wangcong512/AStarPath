@@ -25,14 +25,23 @@ end
 
 function Path:GenPath(start_pos,end_pos,max_deep = 100)
 
+	self.m_end_pt = end_pos or {x = 0,y = 0}
 	local path_list = {}
 	local open_list = {}
 	local close_list = {}
 	while true do
 		--todo
-		
+
 	end
 
+end
+
+function CalcG()
+	-- body
+end
+
+function CalcH()
+	-- body
 end
 
 function Path:Round9Node(x,y,list)
