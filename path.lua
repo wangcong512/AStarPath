@@ -1,3 +1,5 @@
+Path = class("Path")
+
 local PathNode = {
 	x = 0,
 	y = 0,
@@ -7,8 +9,7 @@ local PathNode = {
 
 }
 
-Path = class("Path")
-
+Path.MaxDeep = 3000
 
 function Path.CreateNode(x,y,f,g,h)
 	-- body
@@ -24,6 +25,7 @@ function Path.CreateNode(x,y,f,g,h)
 end
 
 function Path:GenPath(start_pos,end_pos,max_deep)
+	max_deep = Path.MaxDeep
 	if not start_pos then
 		print("start_pos nil")
 		return {}
@@ -38,6 +40,8 @@ function Path:GenPath(start_pos,end_pos,max_deep)
 	local path_list = {}
 	local open_list = {}
 	local close_list = {}
+	local deep_count = 0
+	self.m_close_list_key_map = {}
 	local start_node = Path.CreateNode(start_pos.x,start_pos.y)
 	local is_obstacle = self:IsBlock(start_pos.x,start_pos.y)
 	if not is_obstacle then
@@ -57,21 +61,49 @@ function Path:GenPath(start_pos,end_pos,max_deep)
 		while parent_node do
 			--todo
 			open_list = {}
-			self:Round9Node(parent_node,open_list)
+			local has_target = self:Round9Node(parent_node,open_list)
 
-			table.sort(open_list, sort_compare)
-
+			if #open_list > 1 then
+				table.sort(open_list, sort_compare)
+			end
+			
 			parent_node = open_list[1]
 
 			if parent_node then
 				table.insert(close_list,parent_node)
+				local key = string.format("x%dy%d",parent_node.x,parent_node.y)
+				self.m_close_list_key_map[key] = true
+			else
+				break
 
 			end
+			if has_target then
+				break
+			end
+
+			--max deep
+			if deep_count > Path.MaxDeep then
+				break
+			end
+			deep_count = deep_count + 1
+
+
+
+
 		end
-			
+
+
+
+
 	else
 		
 	end
+
+	-- printInfo("close_list count %d",#close_list)
+	-- for k,v in ipairs(close_list) do
+	-- 	printInfo("close_list x:%d y:%d",v.x,v.y)
+
+	-- end
 
 	return close_list
 
@@ -106,19 +138,27 @@ function Path:Round9Node(parent_node,list)
 	-- body
 	local x = parent_node.x
 	local y = parent_node.y
+	local reach_dest = false
 	list = list or {}
 	for i= x - 1,x + 1 do
 		for j= y -1,y + 1 do
 			--是否障碍物
 
 			local is_block = self:IsBlock(i,j)
-			if is_block or (i == x and j == y) then
+			local in_close = self:InCloseList(i,j)
+			if is_block or (i == x and j == y) or in_close then
 
 			else
-
 				local path_node = Path.CreateNode()
 				path_node.x,path_node.y = i,j
 
+				if i == self.m_end_pt.x and j == self.m_end_pt.y then
+					
+					table.insert(list,path_node)
+					reach_dest = true
+					--printInfo("-------------end x:%d y:%d",path_node.x,path_node.y)
+					return reach_dest
+				end
 
 				if (i == x - 1 and j == y - 1)
 					or (i == x - 1 and j == y + 1)
@@ -130,7 +170,7 @@ function Path:Round9Node(parent_node,list)
 					path_node.G = 10
 				end
 
-				self:CalcF(path_node)
+				self:CalcF(parent_node,path_node)
 
 				table.insert(list,path_node)
 			end
@@ -138,6 +178,14 @@ function Path:Round9Node(parent_node,list)
 		end
 	end
 
+	return reach_dest
+
+end
+
+function Path:InCloseList(x,y)
+	-- body
+	local key = string.format("x%dy%d",x,y)
+	return self.m_close_list_key_map[key]
 end
 
 function Path:IsBlock(x,y)
