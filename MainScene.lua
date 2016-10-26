@@ -196,7 +196,9 @@ function MainScene:onCreate()
 
 
 
-    local map = Map.create()
+    local map = Map.getInstance()
+    local pos = map:getPosition3D()
+    printInfo("map pos x:%d y:%d",pos.x,pos.y)
     self:addChild(map)
 
     self.m_sprite = display.newSprite()
@@ -228,7 +230,10 @@ function MainScene:onShowAnimation(path)
                 local frames = {}
                 for i=1,8 do
                     local frame = cc.SpriteFrameCache:getInstance():getSpriteFrame(string.format("f-%d.jpg",i - 1))
-                    table.insert(frames,frame)
+                    if frame then
+                        table.insert(frames,frame)
+                    end
+                    
                 end
 
                 local animation = cc.Animation:createWithSpriteFrames(frames,0.1,-1)

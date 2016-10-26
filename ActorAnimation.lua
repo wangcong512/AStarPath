@@ -42,11 +42,11 @@ function ActorAnimation:load(res_name)
             if res_queue == 0 then
                	self.m_frames = {}
                 for k,v in pairs(ActorAnimation.ActionType) do
-                	self.m_frames[v] = self.m_frames[v] or {}
+                	self.m_frames[v] = {}
                 	for i = 1,10 do
 	                	local frame = cc.SpriteFrameCache:getInstance():getSpriteFrame(string.format("%s_%d_%d.png",path_info.basename,v,i))
 	                    if frame then
-	                        table.insert(self.m_frames[v],frame)
+	                        table.insert(self.m_frames[v][i],frame)
 	                    end
                 	end
 
@@ -75,10 +75,16 @@ end
 
 function ActorAnimation:update(dt)
 	-- body
+	self.m_frames[self.m_action_id] = self.m_frames[self.m_action_id] or {}
 	self.m_sprite:setSpriteFrame(self.m_frames[self.m_action_id][self.m_cur_frame])
 end
 
 function ActorAnimation:changeState(action_id)
 	-- body
-	self.m_action_id = action_id
+	if action_id > #ActorAnimation.ActionType then
+		printInfo("ActorAnimation:changeState eror action_id:%d",action_id)
+	else
+		self.m_action_id = action_id
+	end
+	
 end
