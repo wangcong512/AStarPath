@@ -1,31 +1,30 @@
-Camera = class("Camera")
-Camera.pos_x = 0
-Camera.pos_y = 0
-Camera.speed = 100
+PathAI = class("PathAI")
 
-function Camera:ctor(parent)
-	-- body
+function PathAI:ctor(parent)
 
-	self.m_pos = cc.p(0,0)
-	self.m_target_pos = cc.p(0,0)
+	self.m_path = {}
 	self.m_parent = parent
-	local size = cc.Director:getInstance():getWinSize()
-	self.m_width = size.width
-	self.m_height = size.height
+
+
+
+	self:init()
+
 end
 
-function Camera:setCameraPos(pos)
+function PathAI:init()
 	-- body
-	self.m_pos = pos
+	for i=1,10 do
+		local node = {}
+		node.x = i
+		node.y = i
+		table.insert(self.m_path,node)
+	end
 end
 
-function Camera:moveCamera(pos)
-	-- body
-end
-
-function Camera:update(dt)
+function PathAI:update(dt)
 	-- body
 	local distance = dt*Camera.speed
+	local dst = self.m_path.
 	--printInfo("camera move distance distance:%f",distance)
 
 	if math.abs(self.m_target_pos.x - self.m_pos.x) > distance then
@@ -48,9 +47,5 @@ function Camera:update(dt)
 
 	end
 
-end
 
-function Camera:moveToPoint()
-	-- body
 end
-

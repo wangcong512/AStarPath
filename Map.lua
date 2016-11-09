@@ -1,9 +1,9 @@
 Map = class("Map",cc.Node)
-
+Map.CellWidth = 32
+Map.RenderWidth = 256
 function Map:ctor()
  	-- body
- 	self:onCreate()
-
+ 	self.m_total_time = 10
  	self.m_hero = Actor.create()
 
  	self.m_camera = Camera.create(self)
@@ -11,7 +11,46 @@ function Map:ctor()
  	self.m_map_width = 0
  	self.m_map_height = 0
 
+ 	self.m_total_time = 10
+
+ 	self.m_map_data = MapData.create()
+
+ 	--init
+ 	self:onCreate()
+ 	self:initTouch()
+
+ 
 end 
+
+function Map:initTouch()
+	-- body
+	--注册事件
+ 	--触屏事件  
+    local function onTouchBegan(touch, event)  
+        printInfo("onTouchBegan")
+        --printInfo("x:%d,y:%d",touch:getLocation().x,touch:getLocation().y)
+          
+        return true  
+    end  
+      
+    local function onTouchMoved(touch, event)  
+        printInfo("onTouchMoved")
+        --printInfo("x:%d,y:%d",touch:getLocation().x,touch:getLocation().y)  
+    end  
+      
+    local function onTouchEnded(touch, event)  
+        printInfo("onTouchEnded")  
+        --printInfo("x:%d,y:%d",touch:getLocation().x,touch:getLocation().y)
+    end  
+      
+    local listenerTouch = cc.EventListenerTouchOneByOne:create()  
+    listenerTouch:registerScriptHandler(onTouchBegan,cc.Handler.EVENT_TOUCH_BEGAN)  
+    listenerTouch:registerScriptHandler(onTouchMoved,cc.Handler.EVENT_TOUCH_MOVED)  
+    listenerTouch:registerScriptHandler(onTouchEnded,cc.Handler.EVENT_TOUCH_ENDED)  
+      
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listenerTouch,self)  
+
+end
 
 function Map.getInstance()
 	-- body
@@ -29,10 +68,13 @@ end
 function Map:onCreate( ... )
 	-- body
 	
-    self.m_bk = display.newSprite("74.jpg")
+    self.m_bk = display.newSprite("76.jpg")
     self.m_bk:setAnchorPoint(cc.p(0,0))
     self.m_bk:move(cc.p(0, 0))
             :addTo(self)
+
+
+    self:initMap()
 
 
 end
@@ -42,8 +84,8 @@ end
 function Map:initMap()
 	-- body
 	local size = self:getContentSize()
-	size.width = 1000
-	size.height = 1000
+	size.width = 2500
+	size.height = 1667
 
 	self.m_map_width = size.width
 	self.m_map_height = size.height
@@ -54,7 +96,21 @@ end
 --间隔一段时间调整一下镜头
 function Map:update(dt)
 	-- body
+	local temp_value = dt + dt
+
+	self.m_total_time = self.m_total_time + dt
+	--printInfo(" Map:update total_time:%f dt:%f",self.m_total_time,dt)
+	-- if self.m_total_time < 0 then
+	-- 	self.m_total_time  = 0.0
+	-- end
+	-- if self.m_total_time > 1 then
 	self:ajustPosition()
+	-- 	self.m_total_time = self.m_total_time - 2
+	-- 	printInfo(" Map:update total_time:%f",self.m_total_time)
+	-- end
+
+	self.m_camera:update(dt)
+	
 
 end
 
@@ -65,9 +121,23 @@ function Map:ajustPosition()
 	local y = self.m_camera.m_pos.y
 	local width = self.m_camera.m_width
 	local height = self.m_camera.m_height
+	--printInfo(" Map:ajustPosition x:%d y:%d",-x,-y)
 
 	local map_max_move_x = math.max(0,self.m_map_width - width)
 	local map_max_move_y = math.max(0,self.m_map_height - height)
+	--printInfo(" Map:ajustPosition move x:%d y:%d",self.m_map_width,width)
+
+	x = math.min(x,map_max_move_x)
+	y = math.min(y,map_max_move_y)
+	--printInfo(" Map:ajustPosition x:%d y:%d",-x,-y)
+
+	x = math.max(x,0)
+	y = math.max(y,0)
+
 
 	self:setPosition(-x, -y)
+	--printInfo(" Map:ajustPosition x:%d y:%d",-x,-y)
+	
+
+
 end
